@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetBtn = document.getElementById('reset-btn');
     const errorResetBtn = document.getElementById('error-reset-btn');
     const saveEditsBtn = document.getElementById('save-edits-btn');
+    const cancelEditsBtn = document.getElementById('cancel-edits-btn');
     const errorMessageEl = document.getElementById('error-message');
     const langToggleBtn = document.getElementById('lang-toggle');
     const textInput = document.getElementById('text-input');
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             err_unknown: 'An error occurred during conversion.',
             editor_title: 'Preview & Edit Entries',
             save_edits_btn: 'Save & Return',
+            cancel_edits_btn: 'Cancel',
             keys_label: 'Keywords (comma separated)',
             card_content_label: 'Entry Content',
             token_est: 'Tokens (est.): '
@@ -101,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             err_unknown: 'Произошла ошибка при конвертации данных.',
             editor_title: 'Предпросмотр и Редактирование',
             save_edits_btn: 'Сохранить и Вернуться',
+            cancel_edits_btn: 'Отмена',
             keys_label: 'Ключевые слова (через запятую)',
             card_content_label: 'Содержимое записи',
             token_est: 'Токенов (примерно): '
@@ -109,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentLang = 'ru'; 
     let convertedData = null;
+    let backupData = null; // Used to cancel edits
     let originalFileName = "";
 
     function detectLanguage() {
@@ -131,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.onmouseout = () => { el.style.opacity = '0.9'; el.style.background = 'rgba(255,255,255,0.1)'; el.style.color = 'var(--text-main)'; el.style.borderColor = 'var(--border-color)'; };
                     return;
                 }
-                // Keep the icon inside the preview button when updating text
                 if (key === 'preview_btn') {
                     el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ` + dict[key];
                     return;
@@ -255,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             convertedData = stFormat;
-            // Go straight to the success screen now
             showSuccess(originalFileName, Object.keys(convertedData.entries).length); 
         } catch (err) {
             showError(getTranslation('err_unknown'), err.toString());
@@ -265,6 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- NEW Editor Logic (Accordion) ---
     previewBtn.addEventListener('click', () => {
         resultArea.classList.add('hidden');
+        // Create a deep copy backup before editing
+        backupData = JSON.parse(JSON.stringify(convertedData));
         showEditor();
     });
 
@@ -285,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const headerDiv = document.createElement('div');
             headerDiv.className = 'editor-card-header';
             
-            // Limit header text length so it doesn't break styling
             const headerText = entry.comment || (entry.key.length > 0 ? entry.key[0] : `Entry ${key}`);
             const titleSpan = document.createElement('span');
             titleSpan.textContent = headerText.length > 40 ? headerText.substring(0, 40) + '...' : headerText;
@@ -362,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
             bodyDiv.appendChild(keysDiv);
             bodyDiv.appendChild(contentDiv);
 
-            // Click listener to expand/collapse
             headerDiv.addEventListener('click', () => {
                 bodyDiv.classList.toggle('open');
                 chevron.classList.toggle('open');
@@ -374,7 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Keep changes and return
     saveEditsBtn.addEventListener('click', () => {
+        editorArea.classList.add('hidden');
+        showSuccess(originalFileName, Object.keys(convertedData.entries).length);
+    });
+
+    // Revert changes and return
+    cancelEditsBtn.addEventListener('click', () => {
+        convertedData = backupData; // Restore original data
         editorArea.classList.add('hidden');
         showSuccess(originalFileName, Object.keys(convertedData.entries).length);
     });
@@ -398,6 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetUI() {
         convertedData = null;
+        backupData = null;
         originalFileName = "";
         resultArea.classList.add('hidden');
         errorArea.classList.add('hidden');
