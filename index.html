@@ -124,11 +124,13 @@
                 <span data-i18n="editor_title">Preview & Edit Entries</span>
             </div>
             
-            <div id="editor-cards-container" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 500px; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem;">
-                <!-- Cards generated via JS go here -->
-            </div>
+            <div id="editor-cards-container" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem;">
+                </div>
 
-            <button id="save-edits-btn" class="btn primary-btn" data-i18n="save_edits_btn">Save & Return</button>
+            <div style="display: flex; gap: 1rem; width: 100%;">
+                <button id="cancel-edits-btn" class="btn secondary-btn" data-i18n="cancel_edits_btn" style="flex: 1;">Cancel</button>
+                <button id="save-edits-btn" class="btn primary-btn" data-i18n="save_edits_btn" style="flex: 2;">Save & Return</button>
+            </div>
         </div>
 
         <!-- RESULT AREA -->
